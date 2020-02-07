@@ -20,7 +20,7 @@ final class MLBusinessDiscountSingleItemView: UIView {
     private var itemHeightMargin: CGFloat = 12
     
     weak var delegate: MLBusinessUserInteractionProtocol?
-
+    
     init(discountSingleItem: MLBusinessSingleItemProtocol, itemIndex: Int, itemSection: Int) {
         self.discountSingleItem = discountSingleItem
         self.itemIndex = itemIndex
@@ -28,11 +28,11 @@ final class MLBusinessDiscountSingleItemView: UIView {
         super.init(frame: .zero)
         render()
     }
-
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     func getItemIndex() -> Int {
         return itemIndex
     }
@@ -40,7 +40,7 @@ final class MLBusinessDiscountSingleItemView: UIView {
 
 // MARK: Privates
 extension MLBusinessDiscountSingleItemView {
-
+    
     private func render() {
         self.backgroundColor = .white
         self.layer.cornerRadius = 6
@@ -53,7 +53,7 @@ extension MLBusinessDiscountSingleItemView {
                 icon.layer.masksToBounds = true
             }
         })
-
+        
         self.addSubview(icon)
         icon.contentMode = .scaleAspectFill
         NSLayoutConstraint.activate([
@@ -61,8 +61,8 @@ extension MLBusinessDiscountSingleItemView {
             icon.widthAnchor.constraint(equalToConstant: MLBusinessDiscountSingleItemView.iconImageSize),
             icon.topAnchor.constraint(equalTo: self.topAnchor, constant: itemHeightMargin),
             icon.centerXAnchor.constraint(equalTo: self.centerXAnchor)
-        ])
-
+            ])
+        
         let itemTitle = UILabel()
         itemTitle.prepareForAutolayout(.clear)
         self.addSubview(itemTitle)
@@ -75,8 +75,8 @@ extension MLBusinessDiscountSingleItemView {
             itemTitle.topAnchor.constraint(equalTo: icon.bottomAnchor, constant: UI.Margin.XS_MARGIN),
             itemTitle.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             itemTitle.trailingAnchor.constraint(equalTo: self.trailingAnchor)
-        ])
-
+            ])
+        
         let itemSubtitle = UILabel()
         itemSubtitle.prepareForAutolayout(.clear)
         self.addSubview(itemSubtitle)
@@ -90,8 +90,8 @@ extension MLBusinessDiscountSingleItemView {
             itemSubtitle.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             itemSubtitle.trailingAnchor.constraint(equalTo: self.trailingAnchor),
             itemSubtitle.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -itemHeightMargin)
-        ])
-
+            ])
+        
         let iconOverlay: UIView = UIView(frame: .zero)
         iconOverlay.prepareForAutolayout(.clear)
         iconOverlay.layer.cornerRadius = iconCornerRadius
@@ -104,11 +104,13 @@ extension MLBusinessDiscountSingleItemView {
             iconOverlay.topAnchor.constraint(equalTo: self.topAnchor, constant: itemHeightMargin),
             iconOverlay.centerXAnchor.constraint(equalTo: self.centerXAnchor)
             ])
-
+        
         let longTapGesture = UILongPressGestureRecognizer(target: self, action: #selector(self.didTapOnButton))
         longTapGesture.minimumPressDuration = 0.2
+        longTapGesture.cancelsTouchesInView = false
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.callTapAction))
+        tapGesture.cancelsTouchesInView = false
         
         self.addGestureRecognizer(longTapGesture)
         self.addGestureRecognizer(tapGesture)
@@ -120,6 +122,14 @@ extension MLBusinessDiscountSingleItemView {
             if self.discountSingleItem.deepLinkForItem() != nil {
                 self.backgroundColor = UIColor(red:0.96, green:0.96, blue:0.96, alpha:1.0)
             }
+        } else if gesture.state == UITapGestureRecognizer.State.changed {
+            let location = gesture.location(in: self)
+            if( location.x < 0 || location.y < 0
+                || location.y > self.frame.height
+                || location.x > self.frame.width) {
+                self.backgroundColor = .white
+                gesture.state = .cancelled
+            }
         } else if gesture.state == UITapGestureRecognizer.State.ended {
             self.backgroundColor = .white
             delegate?.didTap(item: discountSingleItem, index: itemIndex, section: itemSection)
@@ -129,5 +139,5 @@ extension MLBusinessDiscountSingleItemView {
     @objc private func callTapAction(gesture: UITapGestureRecognizer) {
         delegate?.didTap(item: discountSingleItem, index: itemIndex, section: itemSection)
     }
-
+    
 }
